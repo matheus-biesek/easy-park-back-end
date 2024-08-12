@@ -31,7 +31,7 @@ public class VacancyService {
                     return "Error: Vacancy not found for position " + vacancy.position();
                 }
             }
-            return "success";
+            return "Vaga reservada com sucesso!";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
@@ -52,6 +52,24 @@ public class VacancyService {
             // Captura qualquer outra exceção não esperada
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    public ResponseEntity<String> deleteVacancy(VacancyDTO body) {
+        try {
+            Vacancy vacancyFound = vacancyRepository.findByPosition(body.position());
+            if (vacancyFound == null) {
+                // Se a vaga não for encontrada, retornamos uma resposta 404
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Vaga não encontrada para a posição: " + body.position());
+            }
+            vacancyRepository.delete(vacancyFound);
+            // Se a vaga foi deletada com sucesso, retornamos uma resposta 200
+            return ResponseEntity.ok("Vaga deletada com sucesso!");
+        } catch (Exception e) {
+            // Em caso de erro, retornamos uma resposta 500 com detalhes da exceção
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ocorreu um erro ao tentar deletar a vaga: " + e.getMessage());
         }
     }
 }

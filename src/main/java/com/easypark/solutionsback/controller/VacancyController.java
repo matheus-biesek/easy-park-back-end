@@ -12,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api-vacancy")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 public class VacancyController {
 
     private final VacancyService vacancyService;
@@ -32,9 +31,16 @@ public class VacancyController {
         return this.vacancyService.createVacancy(body);
     }
 
+    @PostMapping("/delete-vacancy")
+    public @ResponseBody ResponseEntity<String> deleteVacancy(@RequestBody VacancyDTO body) {
+        return this.vacancyService.deleteVacancy(body);
+    }
+
     @GetMapping("/test")
     public ResponseEntity<ApiResponse> test() {
         ApiResponse response = new ApiResponse("Funcionando!");
         return ResponseEntity.ok(response);
     }
+
+    
 }
