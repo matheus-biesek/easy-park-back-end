@@ -26,6 +26,7 @@ public class TokenService {
             String token = JWT.create()
                     .withIssuer("login-auth-ipa")
                     .withSubject(user.getUsername())
+                    .withClaim("role", user.getRole().ordinal())
                     .withExpiresAt(this.generateExpirationDate())
                     .sign(algorithm);
             logger.info("Token gerado para o usuário: {}", user.getUsername());
@@ -58,6 +59,7 @@ public class TokenService {
                     .build()
                     .verify(token);
             logger.info("token validado com sucesso - {}", token);
+
             return true;
         } catch (JWTVerificationException exception) {
             logger.info("token invalido com sucesso - {}", token);
