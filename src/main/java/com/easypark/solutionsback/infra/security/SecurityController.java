@@ -1,10 +1,8 @@
 package com.easypark.solutionsback.infra.security;
 
-import com.easypark.solutionsback.dto.LoginRequestDTO;
-import com.easypark.solutionsback.dto.RegisterRequestDTO;
-import com.easypark.solutionsback.dto.TokenRequestDTO;
-import com.easypark.solutionsback.dto.TokenResponseDTO;
+import com.easypark.solutionsback.dto.*;
 import com.easypark.solutionsback.model.User;
+import com.easypark.solutionsback.model.UserRole;
 import com.easypark.solutionsback.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +37,7 @@ public class SecurityController {
             User newUser = new User();
             newUser.setPassword(passwordEncoder.encode(body.password()));
             newUser.setUsername(body.username());
+            newUser.setRole(UserRole.USER);
             this.userRepository.save(newUser);
             String token = this.tokenService.generateToken(newUser);
             return ResponseEntity.ok(new TokenResponseDTO(token));
@@ -46,11 +45,23 @@ public class SecurityController {
         return ResponseEntity.badRequest().build();
     }
 
-    @PostMapping("/token-is-valid")
-    public boolean tokenIsValid(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7); // Remove 'Bearer ' do início
-        return this.tokenService.booleanValidateToken(token);
+    @PostMapping("/register-adm")
+    public ResponseEntity registerAdm(@RequestBody RegisterAdmRequestDTO body){
+        Optional<User> user = this.userRepository.findByUsername(body.username());
+        if(user.isEmpty()){
+            User newUser = new User();
+            newUser.setPassword(passwordEncoder.encode(body.password()));
+            newUser.setUsername(body.username());
+            newUser.setRole(body.role());
+            this.userRepository.save(newUser);
+            return ResponseEntity.ok(new TokenResponseDTO(tokenService.generateToken(newUser)));
+        }
+        return ResponseEntity.badRequest().build();
     }
 
-
+    @PostMapping("/token-is-valid")
+    public boolean tokenIsValid(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        return this.tokenService.booleanValidateToken(token);
+    }
 }
