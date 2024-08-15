@@ -28,8 +28,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/api-vacancy/create-vacancy" , "/api-vacancy/delete-vacancy").hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register-client", "/auth/token-is-valid", "/auth/register-adm").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api-vacancy/create-vacancy" , "/api-vacancy/delete-vacancy", "/auth/register-adm").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register-client", "/auth/token-is-valid").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(this.securityFilter, UsernamePasswordAuthenticationFilter.class);
