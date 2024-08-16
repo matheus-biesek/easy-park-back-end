@@ -59,6 +59,17 @@ public class SecurityController {
         return ResponseEntity.badRequest().build();
     }
 
+    @PostMapping("/update-role")
+    public @ResponseBody ResponseEntity updateRole(@RequestBody RoleRequestDTO body){
+        Optional<User> user = this.userRepository.findByUsername(body.username());
+        if(user.isPresent()) {
+            user.get().setRole(body.role());
+            this.userRepository.save(user.get());
+            return ResponseEntity.ok(new StringResponseDTO("Role do atualizada com sucesso!"));
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
     @PostMapping("/token-is-valid")
     public boolean tokenIsValid(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
