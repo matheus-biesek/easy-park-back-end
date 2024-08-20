@@ -1,6 +1,7 @@
 package com.easypark.solutionsback.service;
 
 import com.easypark.solutionsback.dto.VacancyDTO;
+import com.easypark.solutionsback.model.EnumStatusVacancy;
 import com.easypark.solutionsback.model.Vacancy;
 import com.easypark.solutionsback.repository.VacancyRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,18 +25,22 @@ public class VacancyService {
         try {
             for (VacancyDTO vacancy : body) {
                 Vacancy vacancyFound = this.vacancyRepository.findByPosition(vacancy.position());
-                if (vacancyFound != null) {
-                    vacancyFound.setStatus(vacancy.status());
-                    vacancyRepository.save(vacancyFound);
-                } else {
-                    return "Error: Vacancy not found for position " + vacancy.position();
+
+                if (vacancyFound == null) {
+                    return "Erro! A vaga não foi encontrada, posição: " + vacancy.position();
                 }
+                if (vacancyFound.getStatus() == EnumStatusVacancy.reserved) {
+                    return "Esta vaga já está reservada";
+                }
+                vacancyFound.setStatus(vacancy.status());
+                vacancyRepository.save(vacancyFound);
             }
             return "Vaga reservada com sucesso!";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
     }
+
     public ResponseEntity<String> createVacancy(VacancyDTO body) {
         if (body == null || body.position() <= 0 || body.status() == null) {
             return ResponseEntity.badRequest().body("O valor enviado é inválido");
