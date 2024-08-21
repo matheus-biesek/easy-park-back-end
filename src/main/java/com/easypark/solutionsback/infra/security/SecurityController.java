@@ -5,6 +5,7 @@ import com.easypark.solutionsback.model.User;
 import com.easypark.solutionsback.model.UserRole;
 import com.easypark.solutionsback.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -73,5 +74,16 @@ public class SecurityController {
     public boolean tokenIsValid(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.substring(7);
         return this.tokenService.booleanValidateToken(token);
+    }
+
+    @DeleteMapping("/delete-user")
+    public ResponseEntity<StringResponseDTO> deleteUser(@RequestBody DeleteUserRequestDTO body) {
+        Optional<User> user = this.userRepository.findByUsername(body.username());
+        if(user.isPresent()) {
+            this.userRepository.delete(user.get());
+            return ResponseEntity.ok(new StringResponseDTO("Usuário deletado com sucesso!"));
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new StringResponseDTO("Usuário não foi encontrado!"));
     }
 }
