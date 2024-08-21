@@ -29,7 +29,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/api-vacancy/create-vacancy" , "/api-vacancy/delete-vacancy", "/auth/register-adm", "/auth/update-role").hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/auth/update-role").hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register-client", "/auth/token-is-valid").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/auth/delete-user").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(this.securityFilter, UsernamePasswordAuthenticationFilter.class);
