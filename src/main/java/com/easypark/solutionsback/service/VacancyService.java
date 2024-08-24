@@ -1,6 +1,6 @@
 package com.easypark.solutionsback.service;
 
-import com.easypark.solutionsback.dto.VacancyDTO;
+import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
 import com.easypark.solutionsback.model.EnumStatusVacancy;
 import com.easypark.solutionsback.model.Vacancy;
 import com.easypark.solutionsback.repository.VacancyRepository;
@@ -21,9 +21,9 @@ public class VacancyService {
         return this.vacancyRepository.findAll();
     }
 
-    public String updateStatusVacancy(List<VacancyDTO> body) {
+    public String updateStatusVacancy(List<VacancyRequestDTO> body) {
         try {
-            for (VacancyDTO vacancy : body) {
+            for (VacancyRequestDTO vacancy : body) {
                 Vacancy vacancyFound = this.vacancyRepository.findByPosition(vacancy.position());
 
                 if (vacancyFound == null) {
@@ -41,7 +41,7 @@ public class VacancyService {
         }
     }
 
-    public ResponseEntity<String> createVacancy(VacancyDTO body) {
+    public ResponseEntity<String> createVacancy(VacancyRequestDTO body) {
         if (body == null || body.position() <= 0 || body.status() == null) {
             return ResponseEntity.badRequest().body("O valor enviado é inválido");
         }
@@ -60,7 +60,7 @@ public class VacancyService {
         }
     }
 
-    public ResponseEntity<String> deleteVacancy(VacancyDTO body) {
+    public ResponseEntity<String> deleteVacancy(VacancyRequestDTO body) {
         try {
             Vacancy vacancyFound = vacancyRepository.findByPosition(body.position());
             if (vacancyFound == null) {
