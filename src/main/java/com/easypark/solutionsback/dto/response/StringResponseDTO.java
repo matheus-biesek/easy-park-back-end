@@ -1,4 +1,4 @@
-package com.easypark.solutionsback.dto;
+package com.easypark.solutionsback.dto.response;
 
 public record StringResponseDTO(String response) {
 }
