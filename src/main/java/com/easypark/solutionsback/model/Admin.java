@@ -1,9 +1,11 @@
 package com.easypark.solutionsback.model;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -11,5 +13,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Admin {
 
-    String admAlert;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false)
+    private String admAlert;
 }
