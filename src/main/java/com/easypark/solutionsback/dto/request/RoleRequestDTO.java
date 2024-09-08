@@ -1,6 +1,6 @@
 package com.easypark.solutionsback.dto.request;
 
-import com.easypark.solutionsback.model.UserRole;
+import com.easypark.solutionsback.enun.EnumUserRole;
 
-public record RoleRequestDTO(String username, UserRole role) {
+public record RoleRequestDTO(String username, EnumUserRole role) {
 }
