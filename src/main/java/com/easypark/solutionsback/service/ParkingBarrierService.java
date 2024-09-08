@@ -35,4 +35,10 @@ public class ParkingBarrierService {
         this.parkingBarrierRepository.save(parkingBarrierFound);
         return new ResponseEntity<>("O portão irá fechar!", HttpStatus.OK);
     }
+
+    public ResponseEntity<Boolean> statusParkingBarrier(){
+        ParkingBarrier parkingBarrierFund = this.parkingBarrierRepository.findByGate(EnumGate.ONE);
+        boolean status = parkingBarrierFund.getStatus();
+        return new ResponseEntity<>(status, HttpStatus.OK);
+    }
 }

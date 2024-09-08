@@ -9,5 +9,4 @@ import java.util.UUID;
 public interface ParkingBarrierRepository extends JpaRepository<ParkingBarrier, UUID> {
 
     ParkingBarrier findByGate(EnumGate gate);
-
 }

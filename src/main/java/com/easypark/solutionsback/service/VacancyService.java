@@ -1,6 +1,7 @@
 package com.easypark.solutionsback.service;
 
 import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
+import com.easypark.solutionsback.dto.response.VaganciesReservedResponseDTO;
 import com.easypark.solutionsback.enun.EnumStatusVacancy;
 import com.easypark.solutionsback.model.Vacancy;
 import com.easypark.solutionsback.repository.VacancyRepository;
@@ -9,6 +10,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -77,4 +80,16 @@ public class VacancyService {
                     .body("Ocorreu um erro ao tentar deletar a vaga: " + e.getMessage());
         }
     }
+
+    public ResponseEntity<List<VaganciesReservedResponseDTO>> statusVacanciesReserved() {
+        List<Vacancy> allVacancies = vacancyRepository.findAll();
+        List<VaganciesReservedResponseDTO> vacanciesReserveds = new ArrayList<>();
+        for (Vacancy vacancy : allVacancies) {
+            if (vacancy.getStatus() == EnumStatusVacancy.reserved) {
+                vacanciesReserveds.add(new VaganciesReservedResponseDTO(vacancy.getPosition(), true));
+            }
+        }
+        return new ResponseEntity<>(vacanciesReserveds, HttpStatus.OK);
+    }
+
 }
