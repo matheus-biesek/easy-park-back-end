@@ -1,12 +1,12 @@
-package com.easypark.solutionsback.model;
+package com.easypark.solutionsback.enun;
 
-public enum UserRole {
+public enum EnumUserRole {
     ADMIN("admin"),
     USER("user");
 
     private String role;
 
-    UserRole(String role) {
+    EnumUserRole(String role) {
         this.role = role;
     }
 

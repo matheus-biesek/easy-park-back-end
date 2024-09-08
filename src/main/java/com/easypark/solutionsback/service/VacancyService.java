@@ -1,7 +1,7 @@
 package com.easypark.solutionsback.service;
 
 import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
-import com.easypark.solutionsback.model.EnumStatusVacancy;
+import com.easypark.solutionsback.enun.EnumStatusVacancy;
 import com.easypark.solutionsback.model.Vacancy;
 import com.easypark.solutionsback.repository.VacancyRepository;
 import lombok.RequiredArgsConstructor;

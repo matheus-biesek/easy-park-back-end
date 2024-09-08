@@ -1,5 +1,6 @@
 package com.easypark.solutionsback.model;
 
+import com.easypark.solutionsback.enun.EnumStatusVacancy;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

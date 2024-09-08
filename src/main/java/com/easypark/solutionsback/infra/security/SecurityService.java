@@ -4,7 +4,7 @@ import com.easypark.solutionsback.dto.request.*;
 import com.easypark.solutionsback.dto.response.StringResponseDTO;
 import com.easypark.solutionsback.dto.response.TokenResponseDTO;
 import com.easypark.solutionsback.model.User;
-import com.easypark.solutionsback.model.UserRole;
+import com.easypark.solutionsback.enun.EnumUserRole;
 import com.easypark.solutionsback.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,7 +37,7 @@ public class SecurityService {
             User newUser = new User();
             newUser.setPassword(passwordEncoder.encode(body.password()));
             newUser.setUsername(body.username());
-            newUser.setRole(UserRole.USER);
+            newUser.setRole(EnumUserRole.USER);
             this.userRepository.save(newUser);
             String token = this.tokenService.generateToken(newUser);
             return ResponseEntity.ok(new TokenResponseDTO(token));
