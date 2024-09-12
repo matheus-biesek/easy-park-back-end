@@ -1,16 +1,19 @@
 package com.easypark.solutionsback.service;
 
 import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
+import com.easypark.solutionsback.dto.response.StatusVacancyResponseDTO;
 import com.easypark.solutionsback.dto.response.VaganciesReservedResponseDTO;
-import com.easypark.solutionsback.enun.EnumStatusVacancy;
 import com.easypark.solutionsback.model.Vacancy;
+import com.easypark.solutionsback.model.VacancyReserved;
 import com.easypark.solutionsback.repository.VacancyRepository;
+import com.easypark.solutionsback.repository.VacancyReservedRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,47 +22,40 @@ import java.util.List;
 public class VacancyService {
 
     private final VacancyRepository vacancyRepository;
+    private final VacancyReservedRepository vacancyReservedRepository;
 
-    public List<Vacancy> listStatusVacancy() {
-        return this.vacancyRepository.findAll();
-    }
-
-    public String updateStatusVacancy(List<VacancyRequestDTO> body) {
+    public ResponseEntity<String> updateStatusVacancy(List<VacancyRequestDTO> body) {
         try {
-            for (VacancyRequestDTO vacancy : body) {
-                Vacancy vacancyFound = this.vacancyRepository.findByPosition(vacancy.position());
-
+            for (VacancyRequestDTO vacancyRequest : body) {
+                Vacancy vacancyFound = this.vacancyRepository.findByPosition(vacancyRequest.position());
                 if (vacancyFound == null) {
-                    return "Erro! A vaga não foi encontrada, posição: " + vacancy.position();
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("Erro! Vaga não encontrada na posição: " + vacancyRequest.position());
                 }
-                if (vacancyFound.getStatus() == EnumStatusVacancy.reserved) {
-                    return "Esta vaga já está reservada";
-                }
-                vacancyFound.setStatus(vacancy.status());
+                vacancyFound.setStatus(vacancyRequest.status());
                 vacancyRepository.save(vacancyFound);
             }
-            return "Vaga reservada com sucesso!";
+            return ResponseEntity.ok("Todas as vagas foram atualizadas com sucesso!");
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro inesperado: " + e.getMessage());
         }
     }
 
     public ResponseEntity<String> createVacancy(VacancyRequestDTO body) {
-        if (body == null || body.position() <= 0 || body.status() == null) {
-            return ResponseEntity.badRequest().body("O valor enviado é inválido");
-        }
         try {
+            if (body == null || body.position() <= 0 || body.status() == null) {
+                return ResponseEntity.badRequest().body("Dados inválidos: A posição deve ser maior que 0 e o status não deve ser nulo.");
+            }
             Vacancy vacancy = new Vacancy(body.position(), body.status());
             vacancyRepository.save(vacancy);
-            return ResponseEntity.ok("Vaga criada com sucesso!");
+            return ResponseEntity.ok("Vaga criada com sucesso.");
         } catch (DataAccessException e) {
-            // DataAccessException é uma exceção específica para problemas relacionados ao banco de dados
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Database error: " + e.getMessage());
+                    .body("Erro no banco de dados: " + e.getMessage());
         } catch (Exception e) {
-            // Captura qualquer outra exceção não esperada
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An unexpected error occurred: " + e.getMessage());
+                    .body("Erro inesperado: " + e.getMessage());
         }
     }
 
@@ -67,29 +63,71 @@ public class VacancyService {
         try {
             Vacancy vacancyFound = vacancyRepository.findByPosition(body.position());
             if (vacancyFound == null) {
-                // Se a vaga não for encontrada, retornamos uma resposta 404
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Vaga não encontrada para a posição: " + body.position());
+                        .body("Vaga não encontrada na posição: " + body.position());
             }
             vacancyRepository.delete(vacancyFound);
-            // Se a vaga foi deletada com sucesso, retornamos uma resposta 200
-            return ResponseEntity.ok("Vaga deletada com sucesso!");
+            return ResponseEntity.ok("Vaga deletada com sucesso.");
         } catch (Exception e) {
-            // Em caso de erro, retornamos uma resposta 500 com detalhes da exceção
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Ocorreu um erro ao tentar deletar a vaga: " + e.getMessage());
         }
     }
 
     public ResponseEntity<List<VaganciesReservedResponseDTO>> statusVacanciesReserved() {
-        List<Vacancy> allVacancies = vacancyRepository.findAll();
-        List<VaganciesReservedResponseDTO> vacanciesReserveds = new ArrayList<>();
-        for (Vacancy vacancy : allVacancies) {
-            if (vacancy.getStatus() == EnumStatusVacancy.reserved) {
-                vacanciesReserveds.add(new VaganciesReservedResponseDTO(vacancy.getPosition(), true));
+        try {
+            List<Vacancy> allVacancies = this.vacancyRepository.findAll();
+            List<VaganciesReservedResponseDTO> vacanciesReserveds = new ArrayList<>();
+            LocalDate today = LocalDate.now();
+            for (Vacancy vacancy : allVacancies) {
+                boolean isReserved = vacancy.getVacancyReserved().stream()
+                        .anyMatch(reserved -> reserved.getDateTime().toLocalDate().isEqual(today));
+                if (isReserved) {
+                    vacanciesReserveds.add(new VaganciesReservedResponseDTO(vacancy.getPosition(), true));
+                }
             }
+            return new ResponseEntity<>(vacanciesReserveds, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(vacanciesReserveds, HttpStatus.OK);
     }
 
+    public ResponseEntity<String> reservedVacancy(VacancyRequestDTO body) {
+        try {
+            int position = body.position();
+            Vacancy vacancyFound = this.vacancyRepository.findByPosition(position);
+            if (vacancyFound == null) {
+                return new ResponseEntity<>("Vaga não encontrada.", HttpStatus.NOT_FOUND);
+            }
+            LocalDate tomorrow = LocalDate.now().plusDays(1);
+            boolean alreadyReserved = vacancyFound.getVacancyReserved().stream()
+                    .anyMatch(reserved -> reserved.getDateTime().toLocalDate().isEqual(tomorrow));
+            if (alreadyReserved) {
+                return new ResponseEntity<>("Vaga já reservada para amanhã.", HttpStatus.CONFLICT);
+            }
+            VacancyReserved vacancyReserved = new VacancyReserved();
+            vacancyReserved.setVacancy(vacancyFound);
+            vacancyReserved.setDateTime(LocalDateTime.now().plusDays(1));
+            this.vacancyReservedRepository.save(vacancyReserved);
+            return new ResponseEntity<>("Vaga reservada com sucesso.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Ocorreu um erro ao tentar reservar a vaga: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<List<StatusVacancyResponseDTO>> getAllVacanciesStatus() {
+        try {
+            List<Vacancy> allVacancies = this.vacancyRepository.findAll();
+            List<StatusVacancyResponseDTO> vacancyStatuses = new ArrayList<>();
+            for (Vacancy vacancy : allVacancies) {
+                vacancyStatuses.add(new StatusVacancyResponseDTO(
+                        vacancy.getPosition(),
+                        vacancy.getStatus() // Supondo que getStatus retorna EnumStatusVacancy
+                ));
+            }
+            return new ResponseEntity<>(vacancyStatuses, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

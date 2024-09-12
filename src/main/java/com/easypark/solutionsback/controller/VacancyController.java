@@ -1,7 +1,7 @@
 package com.easypark.solutionsback.controller;
 
 import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
-import com.easypark.solutionsback.model.Vacancy;
+import com.easypark.solutionsback.dto.response.StatusVacancyResponseDTO;
 import com.easypark.solutionsback.service.VacancyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +16,18 @@ public class VacancyController {
     private final VacancyService vacancyService;
 
     @GetMapping("/status-all-vacancy")
-    public @ResponseBody List<Vacancy> getStatusAllVacancy() {
-        return this.vacancyService.listStatusVacancy();
+    public @ResponseBody ResponseEntity<List<StatusVacancyResponseDTO>> getStatusAllVacancy() {
+        return this.vacancyService.getAllVacanciesStatus();
     }
 
     @PostMapping("/vacancy-update")
-    public @ResponseBody String updateVacancy(@RequestBody List<VacancyRequestDTO> body) {
+    public @ResponseBody ResponseEntity<String> updateVacancy(@RequestBody List<VacancyRequestDTO> body) {
         return this.vacancyService.updateStatusVacancy(body);
+    }
+
+    @PostMapping("/reserved-vacancy")
+    public @ResponseBody ResponseEntity<String> reservedVacancy(@RequestBody VacancyRequestDTO body){
+        return this.vacancyService.reservedVacancy(body);
     }
 
     @PostMapping("/create-vacancy")
@@ -34,5 +39,6 @@ public class VacancyController {
     public @ResponseBody ResponseEntity<String> deleteVacancy(@RequestBody VacancyRequestDTO body) {
         return this.vacancyService.deleteVacancy(body);
     }
-
 }
+
+
