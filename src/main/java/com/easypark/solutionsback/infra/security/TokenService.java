@@ -50,7 +50,6 @@ public class TokenService {
         }
     }
 
-    //GAMBIARA PARA CONFIRMA SE O USUARIO É VÁLIDO
     public boolean booleanValidateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);

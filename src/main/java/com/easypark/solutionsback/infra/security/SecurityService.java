@@ -1,7 +1,6 @@
 package com.easypark.solutionsback.infra.security;
 
 import com.easypark.solutionsback.dto.request.*;
-import com.easypark.solutionsback.dto.response.StringResponseDTO;
 import com.easypark.solutionsback.dto.response.TokenResponseDTO;
 import com.easypark.solutionsback.model.User;
 import com.easypark.solutionsback.enun.EnumUserRole;
@@ -58,23 +57,22 @@ public class SecurityService {
         return ResponseEntity.badRequest().build();
     }
 
-    public ResponseEntity<StringResponseDTO> updateRoleUser(RoleRequestDTO body) {
+    public ResponseEntity<String> updateRoleUser(RoleRequestDTO body) {
         Optional<User> user = this.userRepository.findByUsername(body.username());
         if(user.isPresent()) {
             user.get().setRole(body.role());
             this.userRepository.save(user.get());
-            return ResponseEntity.ok(new StringResponseDTO("Role do atualizada com sucesso!"));
+            return ResponseEntity.ok("Role do atualizada com sucesso!");
         }
         return ResponseEntity.badRequest().build();
     }
 
-    public ResponseEntity<StringResponseDTO> deleteUser(DeleteUserRequestDTO body) {
+    public ResponseEntity<String> deleteUser(DeleteUserRequestDTO body) {
         Optional<User> user = this.userRepository.findByUsername(body.username());
         if(user.isPresent()) {
             this.userRepository.delete(user.get());
-            return ResponseEntity.ok(new StringResponseDTO("Usuário deletado com sucesso!"));
+            return ResponseEntity.ok("Usuário deletado com sucesso!");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new StringResponseDTO("Usuário não foi encontrado!"));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não foi encontrado!");
     }
 }

@@ -1,8 +1,6 @@
 package com.easypark.solutionsback.infra.security;
 
 import com.easypark.solutionsback.dto.request.*;
-import com.easypark.solutionsback.dto.response.StringResponseDTO;
-import com.easypark.solutionsback.dto.response.TokenResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +29,7 @@ public class SecurityController {
     }
 
     @PutMapping("/update-role")
-    public @ResponseBody ResponseEntity updateRoleUser(@RequestBody RoleRequestDTO body){
+    public @ResponseBody ResponseEntity<String> updateRoleUser(@RequestBody RoleRequestDTO body){
         return this.securityService.updateRoleUser(body);
     }
 
@@ -42,7 +40,7 @@ public class SecurityController {
     }
 
     @DeleteMapping("/delete-user")
-    public ResponseEntity<StringResponseDTO> deleteUser(@RequestBody DeleteUserRequestDTO body) {
+    public ResponseEntity<String> deleteUser(@RequestBody DeleteUserRequestDTO body) {
         return this.securityService.deleteUser(body);
     }
 }
