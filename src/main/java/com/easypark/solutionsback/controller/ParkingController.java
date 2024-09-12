@@ -1,19 +1,22 @@
 package com.easypark.solutionsback.controller;
 
+import com.easypark.solutionsback.dto.request.AdmAlertRequestDTO;
+import com.easypark.solutionsback.repository.AdmRepository;
+import com.easypark.solutionsback.service.AdmService;
 import com.easypark.solutionsback.service.ParkingBarrierService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/parking-barrier")
+@RequestMapping("/parking")
 @RequiredArgsConstructor
-public class ParkingBarrierController {
+public class ParkingController {
 
     private final ParkingBarrierService parkingBarrierService;
+    private final AdmService admService;
+    private final AdmRepository admRepository;
 
     @GetMapping("/open")
     public @ResponseBody ResponseEntity<String> openParking(){
@@ -23,5 +26,10 @@ public class ParkingBarrierController {
     @GetMapping("/close")
     public  @ResponseBody ResponseEntity<String> closeParking(){
         return  parkingBarrierService.close();
+    }
+
+    @PostMapping("/send-alert")
+    public @ResponseBody ResponseEntity<String> sendAlert(@RequestBody AdmAlertRequestDTO body){
+        return admService.sendAlert(body);
     }
 }

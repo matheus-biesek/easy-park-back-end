@@ -1,15 +1,14 @@
 package com.easypark.solutionsback.service;
 
 import com.easypark.solutionsback.dto.request.AdmAlertRequestDTO;
-import com.easypark.solutionsback.dto.response.AdmAlertResponseDTO;
 import com.easypark.solutionsback.model.Adm;
 import com.easypark.solutionsback.repository.AdmRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,27 +16,51 @@ public class AdmService {
 
     private final AdmRepository admRepository;
 
-    public ResponseEntity<AdmAlertResponseDTO> sendAlert(AdmAlertRequestDTO body){
-        if (body.admAlert().isBlank() || body.admAlert().isEmpty()){
-            return new ResponseEntity<>(new AdmAlertResponseDTO("Caracteres inválidos."), HttpStatus.BAD_REQUEST);
+
+    public ResponseEntity<String> sendAlert(AdmAlertRequestDTO body) {
+        try {
+            String alertMessage = body.admAlert();
+            if (alertMessage.isBlank()) {
+                return new ResponseEntity<>("Caracteres inválidos.", HttpStatus.BAD_REQUEST);
+            }
+
+            // localhost UUID adminId = UUID.fromString("769bb14e-892d-444d-bb01-821a3aa8427b");
+            UUID adminId = UUID.fromString("948d41b6-237c-4071-8c07-eccd6394b60b");
+
+            Optional<Adm> optionalAdm = admRepository.findById(adminId);
+            if (optionalAdm.isEmpty()) {
+                return new ResponseEntity<>("Não foi encontrado um administrador no banco de dados.", HttpStatus.NOT_FOUND);
+            }
+
+            Adm adm = optionalAdm.get();
+            adm.setAdmAlert(alertMessage);
+            admRepository.save(adm);
+
+            return new ResponseEntity<>("Alerta enviado com sucesso", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Ocorreu um erro ao enviar o alerta: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        //colocar está funcão no repository pois o repository pode encontrar o admin
-        List<Adm> admins = this.admRepository.findAll();
-        if (admins.isEmpty()){
-            return new ResponseEntity<>(new AdmAlertResponseDTO("Não é possivel realizar a operação, o banco de dados não achou a coluna admAlert!."), HttpStatus.BAD_REQUEST);
-        }
-        Adm adm = admins.get(0);
-        adm.setAdmAlert(body.admAlert());
-        this.admRepository.save(adm);
-        return new ResponseEntity<>(new AdmAlertResponseDTO("Alerta enviado com sucesso"), HttpStatus.OK);
     }
 
     public ResponseEntity<String> statusAdmAlert() {
-        List<Adm> admins = admRepository.findAll();
-        String admAlert = admins.get(0).getAdmAlert();
-        if (admAlert.isEmpty() || admAlert.isBlank()){
-            return new ResponseEntity<>("Bem vindo!", HttpStatus.OK);
+        try {
+            //localhost UUID adminId = UUID.fromString("769bb14e-892d-444d-bb01-821a3aa8427b");
+            UUID adminId = UUID.fromString("948d41b6-237c-4071-8c07-eccd6394b60b");
+
+
+            Optional<Adm> optionalAdm = admRepository.findById(adminId);
+            if (optionalAdm.isEmpty()) {
+                return new ResponseEntity<>("Bem-vindo!", HttpStatus.OK);
+            }
+
+            String admAlert = optionalAdm.get().getAdmAlert();
+            if (admAlert.isBlank()) {
+                return new ResponseEntity<>("Não há mensagens!", HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>(admAlert, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Ocorreu um erro ao verificar o status do alerta: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(admAlert, HttpStatus.OK);
     }
 }

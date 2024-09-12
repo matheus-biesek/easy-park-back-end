@@ -7,7 +7,6 @@ import com.easypark.solutionsback.service.VacancyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -20,7 +19,7 @@ public class Esp32Controller {
     private final ParkingBarrierService parkingBarrierService;
 
     @GetMapping("/vacancies-reserved")
-    public @ResponseBody ResponseEntity<List<VaganciesReservedResponseDTO>> esp32StatusVacanciesReserved(){
+    public @ResponseBody ResponseEntity<List<VaganciesReservedResponseDTO>> statusVacanciesReserved(){
         return this.vacancyService.statusVacanciesReserved();
     }
 
