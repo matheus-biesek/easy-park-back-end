@@ -51,6 +51,4 @@ public class Vacancy {
             return EnumStatusVacancy.available.name();  // Retorna "available" como string
         }
     }
-
-
 }

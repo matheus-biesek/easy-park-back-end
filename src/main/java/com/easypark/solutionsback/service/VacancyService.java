@@ -122,7 +122,7 @@ public class VacancyService {
             for (Vacancy vacancy : allVacancies) {
                 vacancyStatuses.add(new StatusVacancyResponseDTO(
                         vacancy.getPosition(),
-                        vacancy.getStatus() // Supondo que getStatus retorna EnumStatusVacancy
+                        vacancy.getStatus()
                 ));
             }
             return new ResponseEntity<>(vacancyStatuses, HttpStatus.OK);

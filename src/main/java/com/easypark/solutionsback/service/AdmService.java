@@ -24,8 +24,8 @@ public class AdmService {
                 return new ResponseEntity<>("Caracteres inválidos.", HttpStatus.BAD_REQUEST);
             }
 
-            // localhost UUID adminId = UUID.fromString("769bb14e-892d-444d-bb01-821a3aa8427b");
-            UUID adminId = UUID.fromString("948d41b6-237c-4071-8c07-eccd6394b60b");
+            UUID adminId = UUID.fromString("769bb14e-892d-444d-bb01-821a3aa8427b");
+            // prod UUID adminId = UUID.fromString("948d41b6-237c-4071-8c07-eccd6394b60b");
 
             Optional<Adm> optionalAdm = admRepository.findById(adminId);
             if (optionalAdm.isEmpty()) {
@@ -44,8 +44,8 @@ public class AdmService {
 
     public ResponseEntity<String> statusAdmAlert() {
         try {
-            //localhost UUID adminId = UUID.fromString("769bb14e-892d-444d-bb01-821a3aa8427b");
-            UUID adminId = UUID.fromString("948d41b6-237c-4071-8c07-eccd6394b60b");
+            UUID adminId = UUID.fromString("769bb14e-892d-444d-bb01-821a3aa8427b");
+            // prod UUID adminId = UUID.fromString("948d41b6-237c-4071-8c07-eccd6394b60b");
 
 
             Optional<Adm> optionalAdm = admRepository.findById(adminId);
