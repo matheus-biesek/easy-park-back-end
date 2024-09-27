@@ -1,5 +1,6 @@
 package com.easypark.solutionsback.controller;
 
+import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
 import com.easypark.solutionsback.dto.response.VaganciesReservedResponseDTO;
 import com.easypark.solutionsback.service.AdmService;
 import com.easypark.solutionsback.service.ParkingBarrierService;
@@ -32,4 +33,10 @@ public class Esp32Controller {
     public @ResponseBody ResponseEntity<Boolean> statusParkingBarrier(){
         return this.parkingBarrierService.statusParkingBarrier();
     }
+
+    @PostMapping("/change-status-vacancy")
+    public @ResponseBody ResponseEntity<String> changeStatusVacancy(@RequestBody List<VacancyRequestDTO> body) {
+        return this.vacancyService.updateStatusVacancy(body);
+    }
+
 }
