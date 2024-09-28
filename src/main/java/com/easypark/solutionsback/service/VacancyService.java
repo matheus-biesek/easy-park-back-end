@@ -20,7 +20,7 @@ public class VacancyService {
 
     private final VacancyRepository vacancyRepository;
 
-    public ResponseEntity<String> updateStatusVacancy(List<VacancyRequestDTO> body) {
+    public ResponseEntity<String> changeVacanciesStatus(List<VacancyRequestDTO> body) {
         try {
             for (VacancyRequestDTO vacancyRequest : body) {
                 Vacancy vacancyFound = this.vacancyRepository.findByPosition(vacancyRequest.getPosition());
@@ -38,14 +38,14 @@ public class VacancyService {
         }
     }
 
-    public ResponseEntity<String> createVacancy(PositionVacancyRequestDTO body) {
+    public ResponseEntity<String> createVacancy(int position) {
         try {
-            Vacancy vacancyFound = this.vacancyRepository.findByPosition(body.getPosition());
+            Vacancy vacancyFound = this.vacancyRepository.findByPosition(position);
             if (vacancyFound != null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Erro! Está vaga já existe!");
             }
-            Vacancy vacancy = new Vacancy(body.getPosition(), EnumStatusVacancy.available);
+            Vacancy vacancy = new Vacancy(position, EnumStatusVacancy.available);
             vacancyRepository.save(vacancy);
             return ResponseEntity.ok("Vaga criada com sucesso.");
         } catch (DataAccessException e) {
@@ -57,12 +57,12 @@ public class VacancyService {
         }
     }
 
-    public ResponseEntity<String> deleteVacancy(PositionVacancyRequestDTO body) {
+    public ResponseEntity<String> deleteVacancy(int position) {
         try {
-            Vacancy vacancyFound = vacancyRepository.findByPosition(body.getPosition());
+            Vacancy vacancyFound = vacancyRepository.findByPosition(position);
             if (vacancyFound == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Vaga não encontrada na posição: " + body.getPosition());
+                        .body("Vaga não encontrada na posição: " + position);
             }
             vacancyRepository.delete(vacancyFound);
             return ResponseEntity.ok("Vaga deletada com sucesso.");
@@ -72,7 +72,7 @@ public class VacancyService {
         }
     }
 
-    public ResponseEntity<List<StatusVacancyResponseDTO>> getAllVacanciesStatus() {
+    public ResponseEntity<List<StatusVacancyResponseDTO>> getVacanciesStatus() {
         try {
             List<Vacancy> allVacancies = this.vacancyRepository.findAll();
             List<StatusVacancyResponseDTO> vacancyStatuses = new ArrayList<>();

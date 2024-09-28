@@ -1,6 +1,7 @@
 package com.easypark.solutionsback.controller;
 
 import com.easypark.solutionsback.dto.request.*;
+import com.easypark.solutionsback.enun.EnumUserRole;
 import com.easypark.solutionsback.infra.security.SecurityService;
 import com.easypark.solutionsback.infra.security.TokenService;
 import jakarta.validation.Valid;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SecurityController {
 
-    private final TokenService tokenService;
     private final SecurityService securityService;
 
     @PostMapping("/login")
@@ -32,7 +32,7 @@ public class SecurityController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", errors));
         }
-        Optional<String> token = this.securityService.login(body);
+        Optional<String> token = this.securityService.login(body.getUsername(), body.getPassword());
         if (token.isPresent()) {
             Map<String, String> response = new HashMap<>();
             response.put("token", token.get());
@@ -52,12 +52,30 @@ public class SecurityController {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", errors));
         }
         try {
-            String token = this.securityService.registerUser(body);
+            String token = this.securityService.registerUserWithRole(body.getUsername(), body.getPassword(), EnumUserRole.USER);
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage())); // Retorna a mensagem de erro
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/register-adm")
+    public ResponseEntity<Map<String, String>> registerAdm(@Valid @RequestBody RegisterUserRequestDTO body, BindingResult result) {
+        if (result.hasErrors()) {
+            String errors = result.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", errors));
+        }
+        try {
+            String token = this.securityService.registerUserWithRole(body.getUsername(), body.getPassword(), EnumUserRole.ADMIN);
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
@@ -69,7 +87,7 @@ public class SecurityController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errors);
         }
-        return this.securityService.updateRoleUser(body);
+        return this.securityService.updateRoleUser(body.getUsername(), body.getRole());
     }
 
     @DeleteMapping("/delete-user")
@@ -80,24 +98,6 @@ public class SecurityController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errors);
         }
-        return this.securityService.deleteUser(body);
-    }
-
-    @GetMapping("/token-is-valid")
-    public boolean tokenIsValid(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        return this.tokenService.booleanValidateToken(token);
-    }
-
-    @GetMapping("/token-is-valid-adm")
-    public boolean tokenIsValidADM(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        return this.tokenService.booleanValidateTokenAdm(token);
-    }
-
-    @GetMapping("/token-is-valid-user")
-    public boolean tokenIsValidUser(@RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        return this.tokenService.booleanValidateTokenUser(token);
+        return this.securityService.deleteUser(body.getUsername());
     }
 }

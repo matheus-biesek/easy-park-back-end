@@ -20,9 +20,9 @@ public class VacancyController {
 
     private final VacancyService vacancyService;
 
-    @GetMapping("/status-all-vacancy")
-    public @ResponseBody ResponseEntity<List<StatusVacancyResponseDTO>> getStatusAllVacancy() {
-        return this.vacancyService.getAllVacanciesStatus();
+    @GetMapping("/get-vacancies-status")
+    public @ResponseBody ResponseEntity<List<StatusVacancyResponseDTO>> getVacanciesStatus() {
+        return this.vacancyService.getVacanciesStatus();
     }
 
     @PostMapping("/create-vacancy")
@@ -33,7 +33,7 @@ public class VacancyController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errors);
         }
-        return this.vacancyService.createVacancy(body);
+        return this.vacancyService.createVacancy(body.getPosition());
     }
 
     @DeleteMapping("/delete-vacancy")
@@ -44,17 +44,17 @@ public class VacancyController {
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errors);
         }
-        return this.vacancyService.deleteVacancy(body);
+        return this.vacancyService.deleteVacancy(body.getPosition());
     }
 
-    @PutMapping("/update-status-vacancy")
-    public @ResponseBody ResponseEntity<String> updateStatusVacancy(@Valid @RequestBody List<VacancyRequestDTO> body, BindingResult result) {
+    @PutMapping("/change-vacancies-status")
+    public @ResponseBody ResponseEntity<String> changeVacanciesStatus(@Valid @RequestBody List<VacancyRequestDTO> body, BindingResult result) {
         if (result.hasErrors()) {
             String errors = result.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.joining(", "));
             return ResponseEntity.badRequest().body(errors);
         }
-        return this.vacancyService.updateStatusVacancy(body);
+        return this.vacancyService.changeVacanciesStatus(body);
     }
 }

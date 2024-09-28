@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.easypark.solutionsback.enun.EnumUserRole;
 import com.easypark.solutionsback.model.User;
@@ -37,24 +36,19 @@ public class TokenService {
                     .withIssuer("login-auth-ipa")
                     .withSubject(user.getUsername())
                     .withClaim("role", user.getRole().ordinal())
-                    .withExpiresAt(this.generateExpirationDate())
+                    .withExpiresAt(generateExpirationDate())
                     .sign(algorithm);
             logger.info("Token gerado para o usuário: {}", user.getUsername());
-            logger.info("Token gerado: {}", token);
             return token;
         } catch (JWTCreationException exception) {
-            throw new RuntimeException("Erro enquanto está autenticando!", exception);
+            throw new RuntimeException("Erro ao autenticar usuário!", exception);
         }
     }
 
     public String validateToken(String token) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm)
-                    .withIssuer("login-auth-ipa")
-                    .build()
-                    .verify(token)
-                    .getSubject();
+            DecodedJWT decodedJWT = verifyToken(token);
+            return decodedJWT.getSubject();
         } catch (JWTVerificationException exception) {
             throw new RuntimeException("Token inválido ou expirado", exception);
         }
@@ -62,94 +56,53 @@ public class TokenService {
 
     public boolean booleanValidateToken(String token) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            DecodedJWT decodedJWT = JWT.require(algorithm)
-                    .withIssuer("login-auth-ipa")
-                    .build()
-                    .verify(token);
-
-            // Verifica se o token já expirou
-            Date expiration = decodedJWT.getExpiresAt();
-            if (expiration != null && expiration.before(new Date())) {
+            DecodedJWT decodedJWT = verifyToken(token);
+            if (isTokenExpired(decodedJWT)) {
                 logger.info("Token expirado - {}", token);
                 return false;
             }
-
             logger.info("Token validado com sucesso - {}", token);
             return true;
-        } catch (TokenExpiredException e) {
-            logger.info("Token expirado - {}", token);
-            return false;
-        } catch (JWTVerificationException exception) {
-            logger.info("Token não é válido! - {}", token);
+        } catch (JWTVerificationException e) {
+            logger.info("Erro ao validar token: {}", e.getMessage());
             return false;
         }
     }
 
-    public boolean booleanValidateTokenAdm(String token) {
+    public boolean booleanValidateTokenForRole(String token, EnumUserRole role) {
         try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            DecodedJWT decodedJWT = JWT.require(algorithm)
-                    .withIssuer("login-auth-ipa")
-                    .build()
-                    .verify(token);
-
-            // Verifica se o token já expirou
-            Date expiration = decodedJWT.getExpiresAt();
-            if (expiration != null && expiration.before(new Date())) {
+            DecodedJWT decodedJWT = verifyToken(token);
+            if (isTokenExpired(decodedJWT)) {
                 logger.info("Token expirado - {}", token);
                 return false;
             }
-
-            String username = decodedJWT.getSubject();
-            User user = this.userRepository.findByUsername(username).orElse(null);
-
-            if (user == null) {
-                return false;
-            }
-
-            return user.getRole() == EnumUserRole.ADMIN;
-        } catch (TokenExpiredException e) {
-            logger.info("Token expirado - {}", token);
-            return false;
-        } catch (JWTVerificationException exception) {
-            logger.info("Token não é válido! - {}", token);
+            return isUserRoleValid(decodedJWT.getSubject(), role);
+        } catch (JWTVerificationException e) {
+            logger.info("Erro ao validar token: {}", e.getMessage());
             return false;
         }
     }
 
+    private DecodedJWT verifyToken(String token) throws JWTVerificationException {
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        return JWT.require(algorithm)
+                .withIssuer("login-auth-ipa")
+                .build()
+                .verify(token);
+    }
 
-    public boolean booleanValidateTokenUser(String token) {
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(secret);
-            DecodedJWT decodedJWT = JWT.require(algorithm)
-                    .withIssuer("login-auth-ipa")
-                    .build()
-                    .verify(token);
+    private boolean isTokenExpired(DecodedJWT decodedJWT) {
+        Date expiration = decodedJWT.getExpiresAt();
+        return expiration != null && expiration.before(new Date());
+    }
 
-            // Verifica se o token já expirou
-            Date expiration = decodedJWT.getExpiresAt();
-            if (expiration != null && expiration.before(new Date())) {
-                logger.info("Token expirado - {}", token);
-                return false;
-            }
-
-            String username = decodedJWT.getSubject();
-            User user = this.userRepository.findByUsername(username).orElse(null);
-
-            if (user == null) {
-                return false;
-            }
-
-            // Verifica se a role do usuário é USER
-            return user.getRole() == EnumUserRole.USER;
-        } catch (TokenExpiredException e) {
-            logger.info("Token expirado - {}", token);
-            return false;
-        } catch (JWTVerificationException exception) {
-            logger.info("Token não é válido! - {}", token);
+    private boolean isUserRoleValid(String username, EnumUserRole role) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isEmpty()) {
+            logger.info("Usuário não encontrado: {}", username);
             return false;
         }
+        return userOptional.get().getRole() == role;
     }
 
     private Instant generateExpirationDate() {

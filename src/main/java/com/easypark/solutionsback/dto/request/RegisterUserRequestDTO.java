@@ -16,6 +16,6 @@ public class RegisterUserRequestDTO {
     private String username;
 
     @NotBlank(message = "A senha não pode ser nula, vazia ou em branco!")
-    @Size(min = 6, max = 15, message = "A senha deve ter entre 4 e 15 caracteres!")
+    @Size(min = 6, max = 15, message = "A senha deve ter entre 6 e 15 caracteres!")
     private String password;
 }

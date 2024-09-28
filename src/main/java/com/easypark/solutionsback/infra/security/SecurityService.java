@@ -1,6 +1,5 @@
 package com.easypark.solutionsback.infra.security;
 
-import com.easypark.solutionsback.dto.request.*;
 import com.easypark.solutionsback.model.User;
 import com.easypark.solutionsback.enun.EnumUserRole;
 import com.easypark.solutionsback.repository.UserRepository;
@@ -19,46 +18,54 @@ public class SecurityService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
-    public Optional<String> login(LoginRequestDTO body) {
-        User user = this.userRepository.findByUsername(body.getUsername()).orElse(null);
+    public Optional<String> login(String username, String password) {
+        User user = this.userRepository.findByUsername(username).orElse(null);
         if (user == null) {
             return Optional.empty();
         }
-        if (passwordEncoder.matches(body.getPassword(), user.getPassword())) {
+        if (passwordEncoder.matches(password, user.getPassword())) {
             return Optional.of(this.tokenService.generateToken(user));
         }
         return Optional.empty();
     }
 
-    public String registerUser(RegisterUserRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.getUsername());
+    public String registerUserWithRole(String username, String password, EnumUserRole role) {
+        Optional<User> user = this.userRepository.findByUsername(username);
         if (user.isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new RuntimeException("O usuário já existe!");
         }
         User newUser = new User();
-        newUser.setPassword(passwordEncoder.encode(body.getPassword()));
-        newUser.setUsername(body.getUsername());
-        newUser.setRole(EnumUserRole.USER);
+        newUser.setPassword(passwordEncoder.encode(password));
+        newUser.setUsername(username);
+        newUser.setRole(role);
         this.userRepository.save(newUser);
         return this.tokenService.generateToken(newUser);
     }
 
-    public ResponseEntity<String> updateRoleUser(UpdateRoleRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.getUsername());
-        if(user.isPresent()) {
-            user.get().setRole(body.getRole());
-            this.userRepository.save(user.get());
-            return ResponseEntity.ok("Role do atualizada com sucesso!");
+    public ResponseEntity<String> updateRoleUser(String username, EnumUserRole role) {
+        try {
+            Optional<User> user = this.userRepository.findByUsername(username);
+            if (user.isPresent()) {
+                user.get().setRole(role);
+                this.userRepository.save(user.get());
+                return ResponseEntity.ok("Role atualizada com sucesso!");
+            }
+            return ResponseEntity.badRequest().body("Usuário não encontrado!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar a role do usuário.");
         }
-        return ResponseEntity.badRequest().build();
     }
 
-    public ResponseEntity<String> deleteUser(UsernameRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.getUsername());
-        if(user.isPresent()) {
-            this.userRepository.delete(user.get());
-            return ResponseEntity.ok("Usuário deletado com sucesso!");
+    public ResponseEntity<String> deleteUser(String username) {
+        try {
+            Optional<User> user = this.userRepository.findByUsername(username);
+            if (user.isPresent()) {
+                this.userRepository.delete(user.get());
+                return ResponseEntity.ok("Usuário deletado com sucesso!");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao deletar o usuário.");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não foi encontrado!");
     }
 }

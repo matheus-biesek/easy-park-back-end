@@ -29,9 +29,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/vacancy/create-vacancy", "/auth/register-adm").permitAll() //.hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/auth/update-role", "/auth/update-status-vacancy", "/parking-lot/send-adm-alert").permitAll() //.hasAnyRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/auth/update-role", "/auth/change-vacancies-status", "/parking-lot/send-message-adm").permitAll() //.hasAnyRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/auth/delete-user", "/vacancy/delete-vacancy").permitAll() //.hasAnyRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register-client", "/auth/token-is-valid", "/auth/token-is-valid-adm", "/auth/token-is-valid-user").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register-client", "/token/jwt-is-valid", "/token/jwt-is-valid-adm", "/token/jwt-is-valid-user").permitAll()
                         .anyRequest().permitAll() //.authenticated()
                 )
                 .addFilterBefore(this.securityFilter, UsernamePasswordAuthenticationFilter.class);
