@@ -1,7 +1,7 @@
 package com.easypark.solutionsback.repository;
 
+import com.easypark.solutionsback.model.MessageAdm;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.UUID;
 
-public interface AdmRepository extends JpaRepository<Adm, UUID> {
+public interface MessageAdmRepository extends JpaRepository<MessageAdm, Long> {
 }

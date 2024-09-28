@@ -1,7 +1,6 @@
 package com.easypark.solutionsback.infra.security;
 
 import com.easypark.solutionsback.dto.request.*;
-import com.easypark.solutionsback.dto.response.TokenResponseDTO;
 import com.easypark.solutionsback.model.User;
 import com.easypark.solutionsback.enun.EnumUserRole;
 import com.easypark.solutionsback.repository.UserRepository;
@@ -10,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Optional;
 
 @Service
@@ -21,54 +19,42 @@ public class SecurityService {
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
 
-    public ResponseEntity<TokenResponseDTO> login(LoginRequestDTO body) {
-        User user = this.userRepository.findByUsername(body.username()).orElseThrow(() -> new RuntimeException("User not found"));
-        if(passwordEncoder.matches(body.password(), user.getPassword())){
-            String token = this.tokenService.generateToken(user);
-            return ResponseEntity.ok(new TokenResponseDTO(token));
+    public Optional<String> login(LoginRequestDTO body) {
+        User user = this.userRepository.findByUsername(body.getUsername()).orElse(null);
+        if (user == null) {
+            return Optional.empty();
         }
-        return ResponseEntity.badRequest().build();
+        if (passwordEncoder.matches(body.getPassword(), user.getPassword())) {
+            return Optional.of(this.tokenService.generateToken(user));
+        }
+        return Optional.empty();
     }
 
-    public ResponseEntity<TokenResponseDTO> registerUser(RegisterRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.username());
-        if(user.isEmpty()){
-            User newUser = new User();
-            newUser.setPassword(passwordEncoder.encode(body.password()));
-            newUser.setUsername(body.username());
-            newUser.setRole(EnumUserRole.USER);
-            this.userRepository.save(newUser);
-            String token = this.tokenService.generateToken(newUser);
-            return ResponseEntity.ok(new TokenResponseDTO(token));
+    public String registerUser(RegisterUserRequestDTO body) {
+        Optional<User> user = this.userRepository.findByUsername(body.getUsername());
+        if (user.isPresent()) {
+            throw new RuntimeException("Username already exists");
         }
-        return ResponseEntity.badRequest().build();
+        User newUser = new User();
+        newUser.setPassword(passwordEncoder.encode(body.getPassword()));
+        newUser.setUsername(body.getUsername());
+        newUser.setRole(EnumUserRole.USER);
+        this.userRepository.save(newUser);
+        return this.tokenService.generateToken(newUser);
     }
 
-    public ResponseEntity<TokenResponseDTO> registerAdm(RegisterAdmRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.username());
-        if(user.isEmpty()){
-            User newUser = new User();
-            newUser.setPassword(passwordEncoder.encode(body.password()));
-            newUser.setUsername(body.username());
-            newUser.setRole(body.role());
-            this.userRepository.save(newUser);
-            return ResponseEntity.ok(new TokenResponseDTO(tokenService.generateToken(newUser)));
-        }
-        return ResponseEntity.badRequest().build();
-    }
-
-    public ResponseEntity<String> updateRoleUser(RoleRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.username());
+    public ResponseEntity<String> updateRoleUser(UpdateRoleRequestDTO body) {
+        Optional<User> user = this.userRepository.findByUsername(body.getUsername());
         if(user.isPresent()) {
-            user.get().setRole(body.role());
+            user.get().setRole(body.getRole());
             this.userRepository.save(user.get());
             return ResponseEntity.ok("Role do atualizada com sucesso!");
         }
         return ResponseEntity.badRequest().build();
     }
 
-    public ResponseEntity<String> deleteUser(DeleteUserRequestDTO body) {
-        Optional<User> user = this.userRepository.findByUsername(body.username());
+    public ResponseEntity<String> deleteUser(UsernameRequestDTO body) {
+        Optional<User> user = this.userRepository.findByUsername(body.getUsername());
         if(user.isPresent()) {
             this.userRepository.delete(user.get());
             return ResponseEntity.ok("Usuário deletado com sucesso!");

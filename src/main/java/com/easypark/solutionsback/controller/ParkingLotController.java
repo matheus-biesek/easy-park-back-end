@@ -1,33 +1,50 @@
 package com.easypark.solutionsback.controller;
 
-import com.easypark.solutionsback.dto.request.AdmAlertRequestDTO;
-import com.easypark.solutionsback.service.AdmService;
-import com.easypark.solutionsback.service.ParkingBarrierService;
+import com.easypark.solutionsback.dto.request.MessageAdmRequestDTO;
+import com.easypark.solutionsback.service.ParkingLotService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import java.util.stream.Collectors;
 
-@Controller
-@RequestMapping("/parking")
+@RestController
+@RequestMapping("/parking-lot")
 @RequiredArgsConstructor
-public class ParkingController {
+public class ParkingLotController {
 
-    private final ParkingBarrierService parkingBarrierService;
-    private final AdmService admService;
+    private final ParkingLotService parkingLotService;
 
-    @GetMapping("/open")
+    @GetMapping("/collect-message-adm")
+    public @ResponseBody ResponseEntity<String> collectAdmAlert(){
+        return this.parkingLotService.statusAdmAlert();
+    }
+
+    @GetMapping("/status-parking-barrier")
+    public @ResponseBody ResponseEntity<Boolean> statusParkingBarrier(){
+        return this.parkingLotService.statusParkingBarrier();
+    }
+
+    @PutMapping("/open-parking-barrier")
     public @ResponseBody ResponseEntity<String> openParking(){
-        return parkingBarrierService.open();
+        return parkingLotService.open();
     }
 
-    @GetMapping("/close")
+    @PutMapping("/close-parking-barrier")
     public  @ResponseBody ResponseEntity<String> closeParking(){
-        return  parkingBarrierService.close();
+        return  parkingLotService.close();
     }
 
-    @PostMapping("/send-adm-alert")
-    public @ResponseBody ResponseEntity<String> sendAlert(@RequestBody AdmAlertRequestDTO body){
-        return admService.sendAlert(body);
+    @PutMapping("/send-adm-alert")
+    public @ResponseBody ResponseEntity<String> sendAlert(@Valid @RequestBody MessageAdmRequestDTO body, BindingResult result) {
+        if (result.hasErrors()) {
+            String errors = result.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.badRequest().body(errors);
+        }
+        return parkingLotService.sendAlert(body);
     }
 }
