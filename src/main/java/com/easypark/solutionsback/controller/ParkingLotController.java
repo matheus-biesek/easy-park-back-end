@@ -1,7 +1,6 @@
 package com.easypark.solutionsback.controller;
 
 import com.easypark.solutionsback.dto.request.AdmAlertRequestDTO;
-import com.easypark.solutionsback.repository.AdmRepository;
 import com.easypark.solutionsback.service.AdmService;
 import com.easypark.solutionsback.service.ParkingBarrierService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ public class ParkingController {
 
     private final ParkingBarrierService parkingBarrierService;
     private final AdmService admService;
-    private final AdmRepository admRepository;
 
     @GetMapping("/open")
     public @ResponseBody ResponseEntity<String> openParking(){
@@ -28,7 +26,7 @@ public class ParkingController {
         return  parkingBarrierService.close();
     }
 
-    @PostMapping("/send-alert")
+    @PostMapping("/send-adm-alert")
     public @ResponseBody ResponseEntity<String> sendAlert(@RequestBody AdmAlertRequestDTO body){
         return admService.sendAlert(body);
     }

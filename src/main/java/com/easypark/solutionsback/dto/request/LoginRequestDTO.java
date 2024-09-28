@@ -1,3 +1,2 @@
-package com.easypark.solutionsback.dto.request;
-
-public record LoginRequestDTO(String username, String password) {}
+package com.easypark.solutionsback.dto.request;public class LoginRequestDTO {
+}
