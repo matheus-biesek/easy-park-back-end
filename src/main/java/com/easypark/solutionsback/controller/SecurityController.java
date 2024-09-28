@@ -3,10 +3,9 @@ package com.easypark.solutionsback.controller;
 import com.easypark.solutionsback.dto.request.*;
 import com.easypark.solutionsback.enun.EnumUserRole;
 import com.easypark.solutionsback.infra.security.SecurityService;
-import com.easypark.solutionsback.infra.security.TokenService;
+import com.easypark.solutionsback.utils.ValidationErrorHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -15,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,10 +24,8 @@ public class SecurityController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", errors));
         }
         Optional<String> token = this.securityService.login(body.getUsername(), body.getPassword());
@@ -45,10 +41,8 @@ public class SecurityController {
 
     @PostMapping("/register-client")
     public ResponseEntity<Map<String, String>> registerUser(@Valid @RequestBody RegisterUserRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", errors));
         }
         try {
@@ -63,10 +57,8 @@ public class SecurityController {
 
     @PostMapping("/register-adm")
     public ResponseEntity<Map<String, String>> registerAdm(@Valid @RequestBody RegisterUserRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", errors));
         }
         try {
@@ -81,10 +73,8 @@ public class SecurityController {
 
     @PutMapping("/update-role")
     public @ResponseBody ResponseEntity<String> updateRoleUser(@Valid @RequestBody UpdateRoleRequestDTO body, BindingResult result){
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return this.securityService.updateRoleUser(body.getUsername(), body.getRole());
@@ -92,10 +82,8 @@ public class SecurityController {
 
     @DeleteMapping("/delete-user")
     public ResponseEntity<String> deleteUser(@Valid @RequestBody UsernameRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return this.securityService.deleteUser(body.getUsername());

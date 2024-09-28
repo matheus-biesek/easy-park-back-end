@@ -7,12 +7,10 @@ import com.easypark.solutionsback.service.ParkingLotService;
 import com.easypark.solutionsback.utils.ValidationErrorHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/parking-lot")
@@ -44,10 +42,8 @@ public class ParkingLotController {
 
     @PutMapping("/change-gate-status")
     public @ResponseBody ResponseEntity<String> changeGateStatus(@Valid @RequestBody ChangeGateStatusRequestDTO body, BindingResult result){
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return parkingLotService.changeGateStatus(body.getGate(), body.isStatus());
@@ -55,10 +51,8 @@ public class ParkingLotController {
 
     @PutMapping("/send-message-adm")
     public @ResponseBody ResponseEntity<String> sendMessageAdm(@Valid @RequestBody MessageAdmRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return parkingLotService.sendMessageAdm(body.getMessage());

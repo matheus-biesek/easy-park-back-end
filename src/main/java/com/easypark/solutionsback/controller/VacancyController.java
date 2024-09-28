@@ -4,14 +4,13 @@ import com.easypark.solutionsback.dto.request.PositionVacancyRequestDTO;
 import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
 import com.easypark.solutionsback.dto.response.StatusVacancyResponseDTO;
 import com.easypark.solutionsback.service.VacancyService;
+import com.easypark.solutionsback.utils.ValidationErrorHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/vacancy")
@@ -27,10 +26,8 @@ public class VacancyController {
 
     @PostMapping("/create-vacancy")
     public @ResponseBody ResponseEntity<String> createVacancy(@Valid @RequestBody PositionVacancyRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return this.vacancyService.createVacancy(body.getPosition());
@@ -38,10 +35,8 @@ public class VacancyController {
 
     @DeleteMapping("/delete-vacancy")
     public @ResponseBody ResponseEntity<String> deleteVacancy(@Valid @RequestBody PositionVacancyRequestDTO body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return this.vacancyService.deleteVacancy(body.getPosition());
@@ -49,10 +44,8 @@ public class VacancyController {
 
     @PutMapping("/change-vacancies-status")
     public @ResponseBody ResponseEntity<String> changeVacanciesStatus(@Valid @RequestBody List<VacancyRequestDTO> body, BindingResult result) {
-        if (result.hasErrors()) {
-            String errors = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
             return ResponseEntity.badRequest().body(errors);
         }
         return this.vacancyService.changeVacanciesStatus(body);
