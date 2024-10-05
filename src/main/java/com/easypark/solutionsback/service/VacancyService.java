@@ -1,10 +1,11 @@
 package com.easypark.solutionsback.service;
 
-import com.easypark.solutionsback.dto.request.PositionVacancyRequestDTO;
 import com.easypark.solutionsback.dto.request.VacancyRequestDTO;
 import com.easypark.solutionsback.dto.response.StatusVacancyResponseDTO;
 import com.easypark.solutionsback.enun.EnumStatusVacancy;
 import com.easypark.solutionsback.model.Vacancy;
+import com.easypark.solutionsback.model.VacancyHistory;
+import com.easypark.solutionsback.repository.VacancyHistoryRepository;
 import com.easypark.solutionsback.repository.VacancyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
@@ -19,6 +20,24 @@ import java.util.List;
 public class VacancyService {
 
     private final VacancyRepository vacancyRepository;
+    private final VacancyHistoryRepository vacancyHistoryRepository;
+
+    public ResponseEntity<String> saveHistory(int position, EnumStatusVacancy status){
+        try {
+            Vacancy vacancyFound = this.vacancyRepository.findByPosition(position);
+            if (vacancyFound == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Vaga não encontrada para a posição: " + position);
+            }
+            VacancyHistory history = new VacancyHistory(vacancyFound, status);
+            this.vacancyHistoryRepository.save(history);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body("Histórico salvo com sucesso!");
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro inesperado: " + e.getMessage());
+        }
+    }
 
     public ResponseEntity<String> changeVacanciesStatus(List<VacancyRequestDTO> body) {
         try {
@@ -29,7 +48,7 @@ public class VacancyService {
                             .body("Erro! Vaga não encontrada na posição: " + vacancyRequest.getPosition());
                 }
                 vacancyFound.setStatus(vacancyRequest.getStatus());
-                vacancyRepository.save(vacancyFound);
+                this.vacancyRepository.save(vacancyFound);
             }
             return ResponseEntity.ok("Todas as vagas foram atualizadas com sucesso!");
         } catch (Exception e) {
@@ -46,7 +65,7 @@ public class VacancyService {
                         .body("Erro! Está vaga já existe!");
             }
             Vacancy vacancy = new Vacancy(position, EnumStatusVacancy.available);
-            vacancyRepository.save(vacancy);
+            this.vacancyRepository.save(vacancy);
             return ResponseEntity.ok("Vaga criada com sucesso.");
         } catch (DataAccessException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

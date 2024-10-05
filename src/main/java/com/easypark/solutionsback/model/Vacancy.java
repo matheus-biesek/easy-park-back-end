@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +25,9 @@ public class Vacancy {
 
     @Column(nullable = false)
     private EnumStatusVacancy status;
+
+    @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VacancyHistory> history = new ArrayList<>();
 
     public Vacancy(int position, EnumStatusVacancy status){
         this.position = position;

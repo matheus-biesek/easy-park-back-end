@@ -19,6 +19,15 @@ public class VacancyController {
 
     private final VacancyService vacancyService;
 
+    @PostMapping("/save-vacancy-history")
+    public @ResponseBody ResponseEntity<String> saveVacancyHistory(@Valid @RequestBody VacancyRequestDTO body, BindingResult result) {
+        String errors = ValidationErrorHandler.getErrorMessages(result);
+        if (errors != null) {
+            return ResponseEntity.badRequest().body(errors);
+        }
+        return this.vacancyService.saveHistory(body.getPosition(), body.getStatus());
+    }
+
     @GetMapping("/get-vacancies-status")
     public @ResponseBody ResponseEntity<List<StatusVacancyResponseDTO>> getVacanciesStatus() {
         return this.vacancyService.getVacanciesStatus();
